@@ -4,21 +4,30 @@ File: crypto.py
 ---------------
 Assignment 1: Cryptography
 Course: CS 41
-Name: <YOUR NAME>
-SUNet: <SUNet ID>
+Name: Mihaly Sarolta
 
-Replace this with a description of the program.
+You can assume that the plaintext/ciphertext will always have length greater than zero.
+You can assume that all alphabetic characters will be in uppercase.
+If you encounter a non-alphabetic character, do not modify it.
 """
 import utils
 
 # Caesar Cipher
+
 
 def encrypt_caesar(plaintext):
     """Encrypt plaintext using a Caesar cipher.
 
     Add more implementation details here.
     """
-    raise NotImplementedError  # Your implementation here
+    """ TODO: 'str' object does not support item assignment"""
+    TEXT = ""
+    for i in range(len(plaintext)):
+        char = plaintext[i]
+        if plaintext[i].isalpha():
+            char = chr((ord(plaintext[i]) - ord('A') + 3) % 26 + ord('A'))
+        TEXT += char
+    return TEXT
 
 
 def decrypt_caesar(ciphertext):
@@ -26,7 +35,14 @@ def decrypt_caesar(ciphertext):
 
     Add more implementation details here.
     """
-    raise NotImplementedError  # Your implementation here
+    """ TODO: 'str' object does not support item assignment"""
+    TEXT = ""
+    for i in range(len(ciphertext)):
+        char = ciphertext[i]
+        if ciphertext[i].isalpha():
+            char = chr((ord(ciphertext[i]) - ord('A') - 3) % 26 + ord('A'))
+        TEXT += char
+    return TEXT
 
 
 # Vigenere Cipher
@@ -71,6 +87,7 @@ def generate_private_key(n=8):
     """
     raise NotImplementedError  # Your implementation here
 
+
 def create_public_key(private_key):
     """Create a public key corresponding to the given private key.
 
@@ -108,6 +125,7 @@ def encrypt_mh(message, public_key):
     """
     raise NotImplementedError  # Your implementation here
 
+
 def decrypt_mh(message, private_key):
     """Decrypt an incoming message using a private key
 
@@ -127,4 +145,3 @@ def decrypt_mh(message, private_key):
     @return bytearray or str of decrypted characters
     """
     raise NotImplementedError  # Your implementation here
-
