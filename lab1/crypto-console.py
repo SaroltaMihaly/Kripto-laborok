@@ -11,6 +11,8 @@ import random
 
 from crypto import (encrypt_caesar, decrypt_caesar,
                     encrypt_vigenere, decrypt_vigenere,
+                    encrypt_scytale, decrypt_scytale,
+                    encrypt_railfence, decrypt_railfence,
                     generate_private_key, create_public_key,
                     encrypt_mh, decrypt_mh)
 
@@ -21,7 +23,7 @@ from crypto import (encrypt_caesar, decrypt_caesar,
 
 def get_tool():
     print("* Tool *")
-    return _get_selection("(C)aesar, (V)igenere or (M)erkle-Hellman? ", "CVM")
+    return _get_selection("(C)aesar, (V)igenere, (S)kytale, (R)ailfence or (M)erkle-Hellman? ", "CVSRM")
 
 
 def get_action():
@@ -74,7 +76,8 @@ def set_output(output, binary=False):
 def _get_selection(prompt, options):
     choice = input(prompt).upper()
     while not choice or choice[0] not in options:
-        choice = input("Please enter one of {}. {}".format('/'.join(options), prompt)).upper()
+        choice = input("Please enter one of {}. {}".format(
+            '/'.join(options), prompt)).upper()
     return choice[0]
 
 
@@ -90,7 +93,8 @@ def get_yes_or_no(prompt, reprompt=None):
 
     choice = input("{} (Y/N) ".format(prompt)).upper()
     while not choice or choice[0] not in ['Y', 'N']:
-        choice = input("Please enter either 'Y' or 'N'. {} (Y/N)? ".format(reprompt)).upper()
+        choice = input(
+            "Please enter either 'Y' or 'N'. {} (Y/N)? ".format(reprompt)).upper()
     return choice[0] == 'Y'
 
 
@@ -109,7 +113,8 @@ def run_caesar():
     data = clean_caesar(get_input(binary=False))
 
     print("* Transform *")
-    print("{}crypting {} using Caesar cipher...".format('En' if encrypting else 'De', data))
+    print("{}crypting {} using Caesar cipher...".format(
+        'En' if encrypting else 'De', data))
 
     output = (encrypt_caesar if encrypting else decrypt_caesar)(data)
 
@@ -124,9 +129,49 @@ def run_vigenere():
     print("* Transform *")
     keyword = clean_vigenere(input("Keyword? "))
 
-    print("{}crypting {} using Vigenere cipher and keyword {}...".format('En' if encrypting else 'De', data, keyword))
+    print("{}crypting {} using Vigenere cipher and keyword {}...".format(
+        'En' if encrypting else 'De', data, keyword))
 
-    output = (encrypt_vigenere if encrypting else decrypt_vigenere)(data, keyword)
+    output = (encrypt_vigenere if encrypting else decrypt_vigenere)(
+        data, keyword)
+
+    set_output(output)
+
+
+def run_scytale():
+    action = get_action()
+    encrypting = action == 'E'
+    data = get_input(binary=False)
+
+    print("* Transform *")
+    circumference = int(input("Circumference? "))
+
+    print("{}crypting {} using Scytale cipher and circumference {}...".format(
+        'En' if encrypting else 'De', data, circumference))
+
+    if encrypting:
+        output = encrypt_scytale(data, circumference)
+    else:
+        output = decrypt_scytale(data, circumference)
+
+    set_output(output)
+
+
+def run_railfence():
+    action = get_action()
+    encrypting = action == 'E'
+    data = get_input(binary=False)
+
+    print("* Transform *")
+    depth = int(input("Depth? "))
+
+    print("{}crypting {} using Railfence cipher and depth {}...".format(
+        'En' if encrypting else 'De', data, depth))
+
+    if encrypting:
+        output = encrypt_railfence(data, depth)
+    else:
+        output = decrypt_railfence(data, depth)
 
     set_output(output)
 
@@ -175,6 +220,8 @@ def run_suite():
     commands = {
         'C': run_caesar,         # Caesar Cipher
         'V': run_vigenere,       # Vigenere Cipher
+        'S': run_scytale,        # Scytale Cipher
+        'R': run_railfence,      # Railfence Cipher
         'M': run_merkle_hellman  # Merkle-Hellman Knapsack Cryptosystem
     }
     commands[tool]()

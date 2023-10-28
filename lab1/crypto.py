@@ -3,14 +3,17 @@
 File: crypto.py
 ---------------
 Assignment 1: Cryptography
-Course: CS 41
+Course: Kriptografia
 Name: Mihaly Sarolta
 
 You can assume that the plaintext/ciphertext will always have length greater than zero.
 You can assume that all alphabetic characters will be in uppercase.
 If you encounter a non-alphabetic character, do not modify it.
 """
+
 import utils
+
+import math
 
 # Caesar Cipher
 
@@ -20,14 +23,16 @@ def encrypt_caesar(plaintext):
 
     Add more implementation details here.
     """
-    """ TODO: 'str' object does not support item assignment"""
-    TEXT = ""
+    text = ""
     for i in range(len(plaintext)):
         char = plaintext[i]
-        if plaintext[i].isalpha():
-            char = chr((ord(plaintext[i]) - ord('A') + 3) % 26 + ord('A'))
-        TEXT += char
-    return TEXT
+        if char.isalpha():
+            if char.islower():
+                char = chr((ord(char) - ord('a') + 3) % 26 + ord('a'))
+            else:
+                char = chr((ord(char) - ord('A') + 3) % 26 + ord('A'))
+        text += char
+    return text
 
 
 def decrypt_caesar(ciphertext):
@@ -35,14 +40,16 @@ def decrypt_caesar(ciphertext):
 
     Add more implementation details here.
     """
-    """ TODO: 'str' object does not support item assignment"""
-    TEXT = ""
+    text = ""
     for i in range(len(ciphertext)):
         char = ciphertext[i]
-        if ciphertext[i].isalpha():
-            char = chr((ord(ciphertext[i]) - ord('A') - 3) % 26 + ord('A'))
-        TEXT += char
-    return TEXT
+        if char.isalpha():
+            if char.islower():
+                char = chr((ord(char) - ord('a') - 3) % 26 + ord('a'))
+            else:
+                char = chr((ord(char) - ord('A') - 3) % 26 + ord('A'))
+        text += char
+    return text
 
 
 # Vigenere Cipher
@@ -52,7 +59,22 @@ def encrypt_vigenere(plaintext, keyword):
 
     Add more implementation details here.
     """
-    raise NotImplementedError  # Your implementation here
+    keyword = keyword * (len(plaintext) // len(keyword)) + \
+        keyword[:len(plaintext) % len(keyword)]
+
+    text = ""
+    for i in range(len(plaintext)):
+        char = plaintext[i]
+        if char.isalpha():
+            if char.islower():
+                shift = ord(keyword[i]) - ord('a')
+                char = chr((ord(char) - ord('a') + shift) % 26 + ord('a'))
+            else:
+                shift = ord(keyword[i]) - ord('A')
+                char = chr((ord(char) - ord('A') + shift) % 26 + ord('A'))
+        text += char
+
+    return text
 
 
 def decrypt_vigenere(ciphertext, keyword):
@@ -60,7 +82,120 @@ def decrypt_vigenere(ciphertext, keyword):
 
     Add more implementation details here.
     """
-    raise NotImplementedError  # Your implementation here
+    keyword = keyword * (len(ciphertext) // len(keyword)) + \
+        keyword[:len(ciphertext) % len(keyword)]
+
+    text = ""
+    for i in range(len(ciphertext)):
+        char = ciphertext[i]
+        if char.isalpha():
+            if char.islower():
+                shift = ord(keyword[i]) - ord('a')
+                char = chr((ord(char) - ord('a') - shift) % 26 + ord('a'))
+            else:
+                shift = ord(keyword[i]) - ord('A')
+                char = chr((ord(char) - ord('A') - shift) % 26 + ord('A'))
+        text += char
+
+    return text
+
+
+def encrypt_scytale(plaintext, circumference):
+    plaintext = plaintext.upper()
+    rows = math.ceil(len(plaintext) / circumference)
+    matrix = [['#' for _ in range(circumference)] for _ in range(rows)]
+
+    text_index = 0
+    for row in range(rows):
+        for col in range(circumference):
+            if text_index < len(plaintext):
+                matrix[row][col] = plaintext[text_index]
+                text_index += 1
+
+    text = ""
+    for col in range(circumference):
+        for row in range(rows):
+            if matrix[row][col] != "#":
+                text += matrix[row][col]
+
+    return text
+
+
+def decrypt_scytale(ciphertext, circumference):
+    ciphertext = ciphertext.upper()
+    rows = math.ceil(len(ciphertext) / circumference)
+    rest = len(ciphertext) % circumference
+    matrix = [['#' for _ in range(circumference)] for _ in range(rows)]
+
+    text_index = 0
+    for col in range(circumference):
+        for row in range(rows):
+            if text_index < len(ciphertext):
+                if row == rows - 1 and rest != 0:
+                    matrix[row][col] = ciphertext[text_index]
+                    text_index += 1
+                    rest -= 1
+                if row != rows - 1:
+                    matrix[row][col] = ciphertext[text_index]
+                    text_index += 1
+
+    text = ""
+    for row in range(rows):
+        for col in range(circumference):
+            if matrix[row][col] != "#":
+                text += matrix[row][col]
+
+    return text
+
+
+def encrypt_railfence(plaintext, num_rails):
+    plaintext = plaintext.upper()
+    rail_matrix = [['#' for _ in range(len(plaintext))]
+                   for _ in range(num_rails)]
+
+    rail = 0
+    direction = 1  # 1 -lefele , -1 - felfele
+    for i in range(len(plaintext)):
+        rail_matrix[rail][i] = plaintext[i]
+        rail += direction
+        if rail == num_rails - 1 or rail == 0:
+            direction = -direction
+
+    ciphertext = ''.join(''.join(row) for row in rail_matrix)
+
+    return ciphertext.replace("#", "")
+
+
+def decrypt_railfence(ciphertext, num_rails):
+    ciphertext = ciphertext.upper()
+    fence = [[''] * len(ciphertext) for _ in range(num_rails)]
+    rail = 0
+    for i in range(len(ciphertext)):
+        fence[rail][i] = '#'
+        if rail >= num_rails - 1:
+            direction = -1
+        elif rail <= 0:
+            direction = 1
+        rail += direction
+
+    index = 0
+    for i in range(num_rails):
+        for j in range(len(ciphertext)):
+            if fence[i][j] == '#':
+                fence[i][j] = ciphertext[index]
+                index += 1
+
+    rail = 0
+    text = ""
+    for i in range(len(ciphertext)):
+        text += fence[rail][i]
+        if rail >= num_rails - 1:
+            direction = -1
+        elif rail <= 0:
+            direction = 1
+        rail += direction
+
+    return text
 
 
 # Merkle-Hellman Knapsack Cryptosystem
