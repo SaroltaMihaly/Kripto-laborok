@@ -7,7 +7,6 @@ by the crypto module.
 
 If you are a student, you shouldn't need to change anything in this file.
 """
-import random
 
 from crypto import (encrypt_caesar, decrypt_caesar,
                     encrypt_vigenere, decrypt_vigenere,

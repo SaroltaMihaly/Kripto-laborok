@@ -11,8 +11,6 @@ You can assume that all alphabetic characters will be in uppercase.
 If you encounter a non-alphabetic character, do not modify it.
 """
 
-import utils
-
 import math
 
 # Caesar Cipher
@@ -59,8 +57,7 @@ def encrypt_vigenere(plaintext, keyword):
 
     Add more implementation details here.
     """
-    keyword = keyword * (len(plaintext) // len(keyword)) + \
-        keyword[:len(plaintext) % len(keyword)]
+    keyword = keyword * (len(plaintext) // len(keyword)) + keyword[:len(plaintext) % len(keyword)]
 
     text = ""
     for i in range(len(plaintext)):
@@ -82,8 +79,7 @@ def decrypt_vigenere(ciphertext, keyword):
 
     Add more implementation details here.
     """
-    keyword = keyword * (len(ciphertext) // len(keyword)) + \
-        keyword[:len(ciphertext) % len(keyword)]
+    keyword = keyword * (len(ciphertext) // len(keyword)) + keyword[:len(ciphertext) % len(keyword)]
 
     text = ""
     for i in range(len(ciphertext)):
@@ -125,17 +121,22 @@ def decrypt_scytale(ciphertext, circumference):
     ciphertext = ciphertext.upper()
     rows = math.ceil(len(ciphertext) / circumference)
     rest = len(ciphertext) % circumference
+    has_rest = rest > 0
     matrix = [['#' for _ in range(circumference)] for _ in range(rows)]
 
     text_index = 0
     for col in range(circumference):
         for row in range(rows):
             if text_index < len(ciphertext):
-                if row == rows - 1 and rest != 0:
-                    matrix[row][col] = ciphertext[text_index]
-                    text_index += 1
-                    rest -= 1
-                if row != rows - 1:
+                if has_rest:
+                    if row == rows - 1 and rest != 0:
+                        matrix[row][col] = ciphertext[text_index]
+                        text_index += 1
+                        rest -= 1
+                    if row != rows - 1:
+                        matrix[row][col] = ciphertext[text_index]
+                        text_index += 1
+                else:
                     matrix[row][col] = ciphertext[text_index]
                     text_index += 1
 
