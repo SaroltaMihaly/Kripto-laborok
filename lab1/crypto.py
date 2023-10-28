@@ -13,6 +13,32 @@ If you encounter a non-alphabetic character, do not modify it.
 
 import math
 
+# Error handling
+
+
+def check_length(input_str, min_length=1):
+    if len(input_str) < min_length:
+        raise ValueError(f"Input length is less than {min_length} characters.")
+
+
+def check_positive_integer(num_rails):
+    if num_rails <= 0:
+        raise ValueError("Number of rails must be a positive integer.")
+
+
+def check_uppercase(input_str):
+    if not input_str.isupper():
+        print("Input is not uppercase. Converting to uppercase.")
+        input_str = input_str.upper()
+
+    return input_str
+
+
+def check_non_alphabetic(input_str):
+    if not input_str.isalpha():
+        raise ValueError("Input must contain only alphabetic characters.")
+
+
 # Caesar Cipher
 
 
@@ -21,14 +47,15 @@ def encrypt_caesar(plaintext):
 
     Add more implementation details here.
     """
+    plaintext = check_uppercase(plaintext)
+
+    check_length(plaintext)
+
     text = ""
     for i in range(len(plaintext)):
         char = plaintext[i]
         if char.isalpha():
-            if char.islower():
-                char = chr((ord(char) - ord('a') + 3) % 26 + ord('a'))
-            else:
-                char = chr((ord(char) - ord('A') + 3) % 26 + ord('A'))
+            char = chr((ord(char) - ord('A') + 3) % 26 + ord('A'))
         text += char
     return text
 
@@ -38,14 +65,15 @@ def decrypt_caesar(ciphertext):
 
     Add more implementation details here.
     """
+    ciphertext = check_uppercase(ciphertext)
+
+    check_length(ciphertext)
+
     text = ""
     for i in range(len(ciphertext)):
         char = ciphertext[i]
         if char.isalpha():
-            if char.islower():
-                char = chr((ord(char) - ord('a') - 3) % 26 + ord('a'))
-            else:
-                char = chr((ord(char) - ord('A') - 3) % 26 + ord('A'))
+            char = chr((ord(char) - ord('A') - 3) % 26 + ord('A'))
         text += char
     return text
 
@@ -57,18 +85,23 @@ def encrypt_vigenere(plaintext, keyword):
 
     Add more implementation details here.
     """
-    keyword = keyword * (len(plaintext) // len(keyword)) + keyword[:len(plaintext) % len(keyword)]
+    plaintext = check_uppercase(plaintext)
+
+    check_length(plaintext)
+
+    check_length(keyword)
+
+    keyword = check_uppercase(keyword)
+
+    keyword = keyword * (len(plaintext) // len(keyword)) + \
+        keyword[:len(plaintext) % len(keyword)]
 
     text = ""
     for i in range(len(plaintext)):
         char = plaintext[i]
         if char.isalpha():
-            if char.islower():
-                shift = ord(keyword[i]) - ord('a')
-                char = chr((ord(char) - ord('a') + shift) % 26 + ord('a'))
-            else:
-                shift = ord(keyword[i]) - ord('A')
-                char = chr((ord(char) - ord('A') + shift) % 26 + ord('A'))
+            shift = ord(keyword[i]) - ord('A')
+            char = chr((ord(char) - ord('A') + shift) % 26 + ord('A'))
         text += char
 
     return text
@@ -79,25 +112,38 @@ def decrypt_vigenere(ciphertext, keyword):
 
     Add more implementation details here.
     """
-    keyword = keyword * (len(ciphertext) // len(keyword)) + keyword[:len(ciphertext) % len(keyword)]
+    ciphertext = check_uppercase(ciphertext)
+
+    check_length(ciphertext)
+
+    check_length(keyword)
+
+    keyword = check_uppercase(keyword)
+
+    keyword = keyword * (len(ciphertext) // len(keyword)) + \
+        keyword[:len(ciphertext) % len(keyword)]
 
     text = ""
     for i in range(len(ciphertext)):
         char = ciphertext[i]
         if char.isalpha():
-            if char.islower():
-                shift = ord(keyword[i]) - ord('a')
-                char = chr((ord(char) - ord('a') - shift) % 26 + ord('a'))
-            else:
-                shift = ord(keyword[i]) - ord('A')
-                char = chr((ord(char) - ord('A') - shift) % 26 + ord('A'))
+            shift = ord(keyword[i]) - ord('A')
+            char = chr((ord(char) - ord('A') - shift) % 26 + ord('A'))
         text += char
 
     return text
 
 
 def encrypt_scytale(plaintext, circumference):
-    plaintext = plaintext.upper()
+
+    check_non_alphabetic(plaintext)
+
+    plaintext = check_uppercase(plaintext)
+
+    check_length(plaintext)
+
+    check_positive_integer(circumference)
+
     rows = math.ceil(len(plaintext) / circumference)
     matrix = [['#' for _ in range(circumference)] for _ in range(rows)]
 
@@ -118,7 +164,15 @@ def encrypt_scytale(plaintext, circumference):
 
 
 def decrypt_scytale(ciphertext, circumference):
-    ciphertext = ciphertext.upper()
+
+    check_non_alphabetic(ciphertext)
+
+    ciphertext = check_uppercase(ciphertext)
+
+    check_length(ciphertext)
+
+    check_positive_integer(circumference)
+
     rows = math.ceil(len(ciphertext) / circumference)
     rest = len(ciphertext) % circumference
     has_rest = rest > 0
@@ -150,7 +204,15 @@ def decrypt_scytale(ciphertext, circumference):
 
 
 def encrypt_railfence(plaintext, num_rails):
-    plaintext = plaintext.upper()
+
+    check_non_alphabetic(plaintext)
+
+    plaintext = check_uppercase(plaintext)
+
+    check_length(plaintext)
+
+    check_positive_integer(num_rails)
+
     rail_matrix = [['#' for _ in range(len(plaintext))]
                    for _ in range(num_rails)]
 
@@ -168,7 +230,15 @@ def encrypt_railfence(plaintext, num_rails):
 
 
 def decrypt_railfence(ciphertext, num_rails):
-    ciphertext = ciphertext.upper()
+
+    check_non_alphabetic(ciphertext)
+
+    ciphertext = check_uppercase(ciphertext)
+
+    check_length(ciphertext)
+
+    check_positive_integer(num_rails)
+
     fence = [[''] * len(ciphertext) for _ in range(num_rails)]
     rail = 0
     for i in range(len(ciphertext)):
