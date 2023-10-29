@@ -78,6 +78,24 @@ def decrypt_caesar(ciphertext):
     return text
 
 
+def encrypt_caesar_binary(plaintext):
+
+    encrypted = bytearray(len(plaintext))
+    for i in range(len(plaintext)):
+        encrypted_byte = (plaintext[i] + 3) % 256
+        encrypted[i] = encrypted_byte
+    return encrypted
+
+
+def decrypt_caesar_binary(ciphertext):
+
+    decrypted = bytearray(len(ciphertext))
+    for i in range(len(ciphertext)):
+        decrypted_byte = (ciphertext[i] - 3) % 256
+        decrypted[i] = decrypted_byte
+    return decrypted
+
+
 # Vigenere Cipher
 
 def encrypt_vigenere(plaintext, keyword):
@@ -267,6 +285,16 @@ def decrypt_railfence(ciphertext, num_rails):
         rail += direction
 
     return text
+
+
+if __name__ == '__main__':
+
+    data_to_encrypt = bytearray(b'\x01\x02\x03\x04')
+    encrypted_data = encrypt_caesar_binary(data_to_encrypt)
+    print(encrypted_data)
+
+    decrypted_data = decrypt_caesar_binary(encrypted_data)
+    print(decrypted_data)
 
 
 # Merkle-Hellman Knapsack Cryptosystem
