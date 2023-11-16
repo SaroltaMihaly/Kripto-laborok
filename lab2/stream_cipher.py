@@ -53,6 +53,7 @@ def _stream_cipher_encrypt(plaintext, key, type):
         for i in range(len(plaintext)):
             encrypted_text += chr((ord(plaintext[i]) + ord(key[i]) - ord('a')) % 26 + ord('a'))
         return encrypted_text
+
     
 def _stream_cipher_decrypt(ciphertext, key, type):
 
@@ -72,7 +73,6 @@ def _stream_cipher_decrypt(ciphertext, key, type):
         for i in range(len(ciphertext)):
             decrypted_text += chr((ord(ciphertext[i]) - ord(key[i]) - ord('a')) % 26 + ord('a'))
         return decrypted_text
-
 
 
 if __name__ == '__main__':
