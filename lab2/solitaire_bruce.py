@@ -69,19 +69,16 @@ class Solitaire:
         return self.cards
 
     def get_key(self):
-
-        first_card = self.cards[0]
-
         self.solitaire()
+        first_card = self.cards[0]
         while first_card == 53 or first_card == 54:
             self.solitaire()
             first_card = self.cards[0]
         key = self.cards[first_card]
 
-        return key-1
+        return key - 1
 
     def get_keystream(self, length):
-
         keystream = ''
         for _ in range(length):
             bytearray = bin(self.get_key() % 4)[2:].zfill(2) + bin(self.get_key() % 4)[2:].zfill(2) + \

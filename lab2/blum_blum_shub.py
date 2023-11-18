@@ -15,7 +15,6 @@ class BlumBlumShub:
         self.q = self.seed[1]
         self.s = self.seed[2]
 
-
     def blum_blum_shub(self, seed_length):
         n = self.p * self.q
         x = pow(self.s, 2, n)
@@ -33,6 +32,3 @@ class BlumBlumShub:
         bytes_list = [byte_array[i:i + 8] for i in range(0, len(byte_array), 8)]
         char_list = [chr(int(byte, 2)) for byte in bytes_list]
         return ''.join(char_list)
-
-
-

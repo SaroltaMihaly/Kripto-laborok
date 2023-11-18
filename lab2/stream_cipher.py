@@ -121,7 +121,7 @@ class StreamCipher:
 
 
 if __name__ == '__main__':
-    plaintext = "Koszonom istenem"
+    plaintext = "Hello world!"
 
     print("Solitaire")
     stream_cipher = StreamCipher("config.json")

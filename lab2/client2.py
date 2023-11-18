@@ -3,7 +3,7 @@ from lab2.stream_cipher import StreamCipher
 
 
 def main():
-    stream_cipher = StreamCipher("config_blum.json")
+    stream_cipher = StreamCipher("config.json")
 
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(('localhost', 12345))
