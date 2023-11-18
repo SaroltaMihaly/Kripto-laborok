@@ -1,0 +1,4 @@
+{
+  "random_generator": "blum_blum_shub",
+  "seed": [2069, 4339, 9661]
+}

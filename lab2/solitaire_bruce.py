@@ -1,125 +1,91 @@
-from random import shuffle
+class Solitaire:
+    def __init__(self, seed: list):
+        self.cards = seed.copy()
+        # 53 - white joker
+        # 54 - black joker
 
-def init_solitaire_cards():
-    cards = list(range(1,55))
-    shuffle(cards)
-    return cards
-    # 53 - white joker
-    # 54 - black joker
+    def set_seed(self, seed):
+        self.cards = seed.copy()
 
-def change_the_white_black_joker_position(cards):
+    def change_the_white_black_joker_position(self):
 
-    white_joker_index = cards.index(53)
+        white_joker_index = self.cards.index(53)
 
-    if white_joker_index == 53:
-        cards.pop(white_joker_index)
-        cards.insert(1, 53)
-    else:
-        cards.pop(white_joker_index)
-        cards.insert(white_joker_index + 1, 53)
-    return cards
-
-def change_the_black_joker_position(cards):
-    
-    black_joker_index = cards.index(54)
-
-    if black_joker_index == 53:
-        cards.pop(black_joker_index)
-        cards.insert(2, 54)
-    else:
-        if black_joker_index == 52:
-            cards.pop(black_joker_index)
-            cards.insert(1, 54)
+        if white_joker_index == 53:
+            self.cards.pop(white_joker_index)
+            self.cards.insert(1, 53)
         else:
-            cards.pop(black_joker_index)
-            cards.insert(black_joker_index + 2, 54)
-    return cards
+            self.cards.pop(white_joker_index)
+            self.cards.insert(white_joker_index + 1, 53)
 
-def swap_parts(cards):
+    def change_the_black_joker_position(self):
 
-    white_joker_index = cards.index(53)
-    black_joker_index = cards.index(54)
+        black_joker_index = self.cards.index(54)
 
-    if white_joker_index < black_joker_index:
-        cards = cards[black_joker_index + 1:] + cards[white_joker_index:black_joker_index + 1] + cards[:white_joker_index]
-    else:
-        cards = cards[white_joker_index + 1:] + cards[black_joker_index:white_joker_index + 1] + cards[:black_joker_index]
+        if black_joker_index == 53:
+            self.cards.pop(black_joker_index)
+            self.cards.insert(2, 54)
+        else:
+            if black_joker_index == 52:
+                self.cards.pop(black_joker_index)
+                self.cards.insert(1, 54)
+            else:
+                self.cards.pop(black_joker_index)
+                self.cards.insert(black_joker_index + 2, 54)
 
-    print(cards)
-    return cards
+    def swap_parts(self):
 
-def check_last_card(cards):
+        white_joker_index: int = self.cards.index(53)
+        black_joker_index: int = self.cards.index(54)
 
-    last_card = cards[-1]
+        if white_joker_index < black_joker_index:
+            self.cards = self.cards[black_joker_index + 1:] \
+                         + self.cards[white_joker_index:black_joker_index + 1] \
+                         + self.cards[:white_joker_index]
+        else:
+            self.cards = self.cards[white_joker_index + 1:] \
+                         + self.cards[black_joker_index:white_joker_index + 1] \
+                         + self.cards[:black_joker_index]
 
-    if last_card == 53 or last_card == 54:
-        return cards
-    else:
-        first_part = cards[:last_card]
-        remaining_part = cards[last_card:-1]
-        shuffled_deck = remaining_part + first_part + [last_card]
-        print(shuffled_deck)
+    def check_last_card(self):
+        last_card = self.cards[-1]
 
-    return shuffled_deck
+        if last_card == 53 or last_card == 54:
+            shuffled_deck = self.cards
+        else:
+            first_part = self.cards[:last_card]
+            remaining_part = self.cards[last_card:-1]
+            shuffled_deck = remaining_part + first_part + [last_card]
 
-def solitaire(cards):
-        cards = change_the_white_black_joker_position(cards)
-        cards = change_the_black_joker_position(cards)
-        cards = swap_parts(cards)
-        cards = check_last_card(cards)
-    
-        return cards
+        self.cards = shuffled_deck
 
-def get_key(cards):
-    
-    first_card = cards[0]
+    def solitaire(self):
 
-    while first_card == 53 or first_card == 54:
-        cards = solitaire(cards)
-        first_card = cards[0]
+        self.change_the_white_black_joker_position()
+        self.change_the_black_joker_position()
+        self.swap_parts()
+        self.check_last_card()
 
-    key = cards[first_card]
-    return key
+        return self.cards
 
-def encrypt(message, keystream):
-    message = message.replace(" ", "").upper()
-    message_groups = [message[i:i+5].ljust(5, 'X') for i in range(0, len(message), 5)]
+    def get_key(self):
 
-    keystream_numbers = [ord(char) - ord('A') + 1 for char in keystream]
-    
-    encrypted_message = ""
-    for group, key in zip(message_groups, keystream_numbers):
-        group_numbers = [ord(char) - ord('A') + 1 for char in group]
-        encrypted_numbers = [(m + k - 1) % 26 + 1 for m, k in zip(group_numbers, keystream_numbers)]
-        encrypted_chars = [chr(num + ord('A') - 1) for num in encrypted_numbers]
-        encrypted_message += "".join(encrypted_chars)
+        first_card = self.cards[0]
 
-    return encrypted_message
+        self.solitaire()
+        while first_card == 53 or first_card == 54:
+            self.solitaire()
+            first_card = self.cards[0]
+        key = self.cards[first_card]
 
-def decrypt(ciphertext, keystream):
+        return key-1
 
-    ciphertext_numbers = [ord(char) - ord('A') + 1 for char in ciphertext]
-    keystream_numbers = [ord(char) - ord('A') + 1 for char in keystream]
-    decrypted_numbers = [(c - k + 26) % 26 for c, k in zip(ciphertext_numbers, keystream_numbers)]
-    decrypted_message = "".join(chr(num + ord('A') - 1) for num in decrypted_numbers)
+    def get_keystream(self, length):
 
-    return decrypted_message
-
-if __name__ == '__main__':
-
-    cards = init_solitaire_cards()
-
-    cards = solitaire(cards)
-
-    keystream = ''.join([chr(get_key(cards) + ord('A') - 1) for _ in range(10)])
-
-    plaintext = "DO NOT USE PC"
-
-    ciphertext = encrypt(plaintext, keystream)
-
-    print("Plaintext:", plaintext)
-    print("Ciphertext:", ciphertext)
-
-    decrypted_message = decrypt(ciphertext, keystream)
-
-    print("Decrypted message:", decrypted_message)
+        keystream = ''
+        for _ in range(length):
+            bytearray = bin(self.get_key() % 4)[2:].zfill(2) + bin(self.get_key() % 4)[2:].zfill(2) + \
+                        bin(self.get_key() % 4)[2:].zfill(2) + bin(self.get_key() % 4)[2:].zfill(2)
+            decimal_value = int(bytearray, 2)
+            keystream += chr(decimal_value)
+        return str(keystream)
