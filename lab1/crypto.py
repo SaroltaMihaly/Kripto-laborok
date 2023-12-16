@@ -12,6 +12,13 @@ If you encounter a non-alphabetic character, do not modify it.
 """
 
 import math
+import random
+from typing import Tuple
+
+from . import utils
+
+PrivateKey = Tuple[Tuple[int], int, int]
+PublicKey = Tuple[int]
 
 # Error handling
 
@@ -341,7 +348,7 @@ def generate_private_key(n: int = 8) -> PrivateKey:
     q = next_superincreasing_number(sum(w))
     # 3.
     r = random.randint(2, q - 1)
-    while not gcd(r, q) == 1:
+    while not math.gcd(r, q) == 1:
         r = random.randint(2, q - 1)
     return w, q, r
 
@@ -364,7 +371,7 @@ def create_public_key(private_key: PrivateKey) -> PublicKey:
     return tuple([r * w_i % q for w_i in w])
 
 
-def encrypt_mh(message: str, public_key: PublicKey) -> List[int]:
+def encrypt_mh(message: str, public_key: PublicKey) -> list[int]:
     """Encrypt an outgoing message using a public key.
 
     1. Separate the message into chunks the size of the public key (in our case, fixed at 8)
@@ -395,7 +402,7 @@ def encrypt_mh(message: str, public_key: PublicKey) -> List[int]:
     return encrypted
 
 
-def decrypt_mh(message: List[int], private_key: PrivateKey) -> str:
+def decrypt_mh(message: list[int], private_key: PrivateKey) -> str:
     """Decrypt an incoming message using a private key
 
     1. Extract w, q, and r from the private key

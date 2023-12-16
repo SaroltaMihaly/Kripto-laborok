@@ -21,6 +21,9 @@ class KeyServer(object):
     def get_public_key(self, port: int):
         return self.registered_clients[port]
 
+    def get_registered_clients(self):
+        return self.registered_clients
+
     def start_server(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ser_socket:
             ser_socket.bind((KeyServerHeader.SERVER_HOST, KeyServerHeader.SERVER_PORT))
@@ -29,7 +32,7 @@ class KeyServer(object):
 
             while True:
                 conn, addr = ser_socket.accept()
-                logging.info('Connected by', addr)
+                logging.info(f'Connected by {addr}')
                 data = conn.recv(KeyServerHeader.MESSAGE_SIZE)
 
                 if not data:
@@ -37,24 +40,24 @@ class KeyServer(object):
                     break
 
                 request = data.decode()
-                logging.info('Decoded request: ', request)
+                logging.info(f'Decoded request: {request}')
 
                 if 'PUBLIC_KEY' in request:
                     try:
                         port = int(request.split(':')[1])
                         public_key = self.get_public_key(port)
-                        logging.info('Sending public key: ', public_key)
+                        logging.info(f'Sending public key: {public_key}')
                         conn.sendall(str(public_key).encode())
                     except ValueError:
                         logging.info('Error: Invalid request')
                         conn.sendall('Error: Invalid request'.encode())
                 elif 'REGISTER' in request:
                     try:
-                        port, public_key = literal_eval(request)
+                        port, public_key = literal_eval(request.split(':')[1])
                         self.register_client((port, public_key))
-                        logging.info('Registered client: ', port, public_key)
-                        conn.sendall('Registered client'.encode())
-                    except ValueError:
+                        logging.info(f'Registered client: {port=}, {public_key=}')
+                        conn.sendall(KeyServerHeader.GOOD.encode())
+                    except SyntaxError:
                         logging.info('Error: Invalid request')
                         conn.sendall('Error: Invalid request'.encode())
 
