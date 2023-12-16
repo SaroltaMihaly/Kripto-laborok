@@ -299,7 +299,7 @@ if __name__ == '__main__':
 
 # Merkle-Hellman Knapsack Cryptosystem
 
-def generate_private_key(n=8):
+def generate_private_key(n: int = 8) -> PrivateKey:
     """Generate a private key for use in the Merkle-Hellman Knapsack Cryptosystem.
 
     Following the instructions in the handout, construct the private key components
@@ -319,10 +319,34 @@ def generate_private_key(n=8):
 
     @return 3-tuple `(w, q, r)`, with `w` a n-tuple, and q and r ints.
     """
-    raise NotImplementedError  # Your implementation here
+    assert n > 0, 'n must be a positive integer!'
+
+    def next_superincreasing_number(total: int) -> int:
+        return total + random.randint(total + 1, 2 * total)
+
+    def superincreasing_sequence(count: int) -> Tuple[int]:
+        starting_value = random.randint(2, 10)
+        super_seq = [starting_value]
+        sum_super_seq = starting_value
+        for _ in range(count - 1):
+            next_super = next_superincreasing_number(sum_super_seq)
+            super_seq.append(next_super)
+            sum_super_seq += next_super
+        return tuple(super_seq)
+
+    # 1.
+    w = superincreasing_sequence(n)
+    assert utils.is_superincreasing(w), 'The sequence is not superincreasing!'
+    # 2.
+    q = next_superincreasing_number(sum(w))
+    # 3.
+    r = random.randint(2, q - 1)
+    while not gcd(r, q) == 1:
+        r = random.randint(2, q - 1)
+    return w, q, r
 
 
-def create_public_key(private_key):
+def create_public_key(private_key: PrivateKey) -> PublicKey:
     """Create a public key corresponding to the given private key.
 
     To accomplish this, you only need to build and return `beta` as described in the handout.
@@ -336,10 +360,11 @@ def create_public_key(private_key):
 
     @return n-tuple public key
     """
-    raise NotImplementedError  # Your implementation here
+    w, q, r = private_key
+    return tuple([r * w_i % q for w_i in w])
 
 
-def encrypt_mh(message, public_key):
+def encrypt_mh(message: str, public_key: PublicKey) -> List[int]:
     """Encrypt an outgoing message using a public key.
 
     1. Separate the message into chunks the size of the public key (in our case, fixed at 8)
@@ -357,10 +382,20 @@ def encrypt_mh(message, public_key):
 
     @return list of ints representing encrypted bytes
     """
-    raise NotImplementedError  # Your implementation here
+    # 1.
+    chunks = list(message)  # Since the message size is 8 bytes, we just convert it to a list
+    assert len(public_key) == 8, 'The public key must be 8 bytes long!'
+    # 2.
+    byte_list = [utils.byte_to_bits(ord(chunk)) for chunk in chunks]
+    # 3.
+    encrypted = []
+    for byte in byte_list:
+        encrypted.append(sum([a_i * b_i for a_i, b_i in zip(byte, public_key)]))
+    # 4.
+    return encrypted
 
 
-def decrypt_mh(message, private_key):
+def decrypt_mh(message: List[int], private_key: PrivateKey) -> str:
     """Decrypt an incoming message using a private key
 
     1. Extract w, q, and r from the private key
@@ -378,4 +413,25 @@ def decrypt_mh(message, private_key):
 
     @return bytearray or str of decrypted characters
     """
-    raise NotImplementedError  # Your implementation here
+    # 1.
+    w, q, r = private_key
+    # 2.
+    s = utils.modinv(r, q)
+
+    def decrypt_byte(byte: int) -> int:
+        # 3. Calculate c' for each byte
+        c_prime = byte * s % q
+        # 4.
+        decrypted_bits = []
+        for w_k in reversed(w):
+            if w_k > c_prime:
+                decrypted_bits.append(0)
+            else:
+                decrypted_bits.append(1)
+                c_prime -= w_k
+        # Reverse list since we added the bits from the end
+        return utils.bits_to_byte(decrypted_bits[::-1])
+
+    decrypted_bytes = [decrypt_byte(byte) for byte in message]
+    # 5.
+    return ''.join([chr(byte) for byte in decrypted_bytes])
