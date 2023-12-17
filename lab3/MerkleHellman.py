@@ -7,6 +7,13 @@ from . import utils
 PrivateKey = Tuple[Tuple[int], int, int]
 PublicKey = Tuple[int]
 
+
+def decrypt_byte(byte: int, w, q, s) -> int:
+    c_prime = byte * s % q
+    decry_bits = [0 if w_k > c_prime else (c_prime := c_prime - w_k, 1)[1] for w_k in reversed(w)]
+    return utils.bits_to_byte(decry_bits[::-1])
+
+
 def generate_private_key(n: int = 8) -> PrivateKey:
     """Generate a private key for use in the Merkle-Hellman Knapsack Cryptosystem.
 
@@ -27,30 +34,25 @@ def generate_private_key(n: int = 8) -> PrivateKey:
 
     @return 3-tuple `(w, q, r)`, with `w` a n-tuple, and q and r ints.
     """
-    assert n > 0, 'n must be a positive integer!'
+    assert n > 0
 
-    def next_superincreasing_number(total: int) -> int:
-        return total + random.randint(total + 1, 2 * total)
+    initial_value = random.randint(2, 10)
+    sup_seq = [initial_value]
+    sum_sup_seq = initial_value
 
-    def superincreasing_sequence(count: int) -> Tuple[int]:
-        starting_value = random.randint(2, 10)
-        super_seq = [starting_value]
-        sum_super_seq = starting_value
-        for _ in range(count - 1):
-            next_super = next_superincreasing_number(sum_super_seq)
-            super_seq.append(next_super)
-            sum_super_seq += next_super
-        return tuple(super_seq)
+    for _ in range(n - 1):
+        next_super = sum_sup_seq + random.randint(sum_sup_seq + 1, 2 * sum_sup_seq)
+        sup_seq.append(next_super)
+        sum_sup_seq += next_super
 
-    # 1.
-    w = superincreasing_sequence(n)
-    assert utils.is_superincreasing(w), 'The sequence is not superincreasing!'
-    # 2.
-    q = next_superincreasing_number(sum(w))
-    # 3.
+    w = tuple(sup_seq)
+    assert utils.is_superincreasing(w)
+
+    q = sum(w) + random.randint(sum(w) + 1, 2 * sum(w))
     r = random.randint(2, q - 1)
     while not math.gcd(r, q) == 1:
         r = random.randint(2, q - 1)
+
     return w, q, r
 
 
@@ -90,16 +92,10 @@ def encrypt_mh(message: str, public_key: PublicKey) -> list[int]:
 
     @return list of ints representing encrypted bytes
     """
-    # 1.
-    chunks = list(message)  # Since the message size is 8 bytes, we just convert it to a list
-    assert len(public_key) == 8, 'The public key must be 8 bytes long!'
-    # 2.
-    byte_list = [utils.byte_to_bits(ord(chunk)) for chunk in chunks]
-    # 3.
-    encrypted = []
-    for byte in byte_list:
-        encrypted.append(sum([a_i * b_i for a_i, b_i in zip(byte, public_key)]))
-    # 4.
+    assert len(public_key) == 8
+    chunks = list(message)
+    byte_list = list(map(lambda chunk: utils.byte_to_bits(ord(chunk)), chunks))
+    encrypted = [sum(a_i * b_i for a_i, b_i in zip(byte, public_key)) for byte in byte_list]
     return encrypted
 
 
@@ -121,25 +117,8 @@ def decrypt_mh(message: list[int], private_key: PrivateKey) -> str:
 
     @return bytearray or str of decrypted characters
     """
-    # 1.
     w, q, r = private_key
-    # 2.
     s = utils.modinv(r, q)
 
-    def decrypt_byte(byte: int) -> int:
-        # 3. Calculate c' for each byte
-        c_prime = byte * s % q
-        # 4.
-        decrypted_bits = []
-        for w_k in reversed(w):
-            if w_k > c_prime:
-                decrypted_bits.append(0)
-            else:
-                decrypted_bits.append(1)
-                c_prime -= w_k
-        # Reverse list since we added the bits from the end
-        return utils.bits_to_byte(decrypted_bits[::-1])
-
-    decrypted_bytes = [decrypt_byte(byte) for byte in message]
-    # 5.
+    decrypted_bytes = [decrypt_byte(byte, w, q, s) for byte in message]
     return ''.join([chr(byte) for byte in decrypted_bytes])

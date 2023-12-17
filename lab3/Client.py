@@ -9,10 +9,10 @@ from ast import literal_eval
 from pathlib import Path
 
 import KeyServerHeader
+import MerkleHellman
 import logging
 
 sys.path.append(str(Path(__file__).parent.parent.resolve()))
-from MerkellHellman import generate_private_key, create_public_key, encrypt_mh, decrypt_mh
 from lab2.stream_cipher import StreamCipher
 
 logging.basicConfig(level=logging.INFO, format='CLIENT : %(message)s')
@@ -20,10 +20,10 @@ logging.basicConfig(level=logging.INFO, format='CLIENT : %(message)s')
 
 class Client:
     def _generate_register_client(self):
-        private_key = generate_private_key()
+        private_key = MerkleHellman.generate_private_key()
         logging.info(f'Private key: {private_key}')
 
-        public_key = create_public_key(private_key)
+        public_key = MerkleHellman.create_public_key(private_key)
         logging.info(f'Public key: {public_key}')
 
         self.server_socket.sendall(f'REGISTER:{self.port, public_key}'.encode())
@@ -68,7 +68,7 @@ class Client:
             random.shuffle(my_half)
         # Send half of solitaire secret key
         # logging.info(f'My half unencrypted: {str(my_half)}')
-        sent_message = json.dumps(encrypt_mh(str(my_half), self.friend_public_key))
+        sent_message = json.dumps(MerkleHellman.encrypt_mh(str(my_half), self.friend_public_key))
         # logging.info(f'Sending my half encrypted: {sent_message}')
         self.friend_socket.sendall(sent_message.encode())
 
@@ -76,7 +76,7 @@ class Client:
         received = self.friend_socket.recv(KeyServerHeader.MESSAGE_SIZE).decode()
         other_half_encrypted = json.loads(received)
         # logging.info(f'Received other half encrypted: {other_half_encrypted}')
-        other_half = literal_eval(decrypt_mh(other_half_encrypted, self.private_key))
+        other_half = literal_eval(MerkleHellman.decrypt_mh(other_half_encrypted, self.private_key))
         # logging.info(f'Other half decrypted: {other_half}')
 
         def combine_solitaire_element(my, friend):

@@ -4,7 +4,8 @@ SERVER_PORT = 3005
 SERVER_HOST = 'localhost'
 MESSAGE_SIZE = 1024
 
-RegisterType = Tuple[int, Tuple[int]]
+PublicKeyType = Tuple[int, ...]
+RegisterType = Tuple[int, PublicKeyType]
 
 GOOD = 'GOOD'
 END_CONN = 'END_CONN'

@@ -30,11 +30,14 @@ def is_prime(n, k=10):
             return False
 
     return True
+
+
 def generate_prime():
     while True:
         p = random.randint(2 ** 10, 2 ** 16)
         if p % 4 == 3 and is_prime(p):
             return p
+
 
 class StreamCipher:
     def __init__(self, config: str = None, config_dict: dict = None):

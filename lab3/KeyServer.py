@@ -1,6 +1,6 @@
 from ast import literal_eval
 
-import KeyServerHeader
+import lab3.KeyServerHeader as KeyServerHeader
 import socket
 import threading
 import logging
@@ -19,7 +19,7 @@ class KeyServer(object):
             logging.debug('Registering a new client')
         self.registered_clients[port] = public_key
 
-    def get_public_key(self, port: int):
+    def get_public_key(self, port: int) -> KeyServerHeader.PublicKeyType:
         return self.registered_clients[port] if port in self.registered_clients else None
 
     def socket_communication(self, conn: socket.socket):
@@ -80,8 +80,4 @@ class KeyServer(object):
 if __name__ == '__main__':
     server = KeyServer()
     server.start_server()
-
-
-
-
 
