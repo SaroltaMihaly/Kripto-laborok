@@ -37,10 +37,15 @@ def generate_prime():
             return p
 
 class StreamCipher:
-    def __init__(self, config: str):
-        with open(config, 'r') as f:
-            self.config = json.load(f)
-        self.seed = self.config['seed']
+    def __init__(self, config: str = None, config_dict: dict = None):
+        if config:
+            with open(config, 'r') as f:
+                self.config = json.load(f)
+            self.seed = self.config['seed']
+        elif config_dict:
+            self.config = config_dict
+            self.seed = self.config['seed']
+
         random_gen = self.config['random_generator']
         if random_gen == 'solitaire':
             self.random_generator = Solitaire(self.seed)
@@ -51,7 +56,6 @@ class StreamCipher:
 
     def encrypt(self, plaintext: str):
         ciphertext = ''
-        self.random_generator.set_seed(self.seed)
         keystream = self.random_generator.get_keystream(len(plaintext))
         for i in range(len(plaintext)):
             ciphertext += chr(ord(plaintext[i]) ^ ord(keystream[i]))
@@ -59,7 +63,6 @@ class StreamCipher:
 
     def decrypt(self, ciphertext: str):
         plaintext = ''
-        self.random_generator.set_seed(self.seed)
         keystream = self.random_generator.get_keystream(len(ciphertext))
         for i in range(len(ciphertext)):
             plaintext += chr(ord(ciphertext[i]) ^ ord(keystream[i]))
@@ -68,56 +71,6 @@ class StreamCipher:
     def get_key(self, length: int):
         self.random_generator.set_seed(self.seed)
         return self.random_generator.get_keystream(length)
-
-
-# def _generate_key(length, type):
-#
-#     if type == "binary":
-#         return ''.join(random.choice('01') for _ in range(length))
-#     elif type == "decimal":
-#         return ''.join(random.choice('0123456789') for _ in range(length))
-#     elif type == "alpabet":
-#         return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(length))
-#
-#
-# def _stream_cipher_encrypt(plaintext, key, type):
-#
-#     encrypted_text = ""
-#
-#     if type == "binary":
-#         for i in range(len(plaintext)):
-#             encrypted_text += chr((int(plaintext[i]) + int(key[i])) % 2 + ord('0'))
-#         return encrypted_text
-#
-#     elif type == "decimal":
-#         for i in range(len(plaintext)):
-#             encrypted_text += chr((int(plaintext[i]) + int(key[i])) % 10 + ord('0'))
-#         return encrypted_text
-#
-#     elif type == "alpabet":
-#         for i in range(len(plaintext)):
-#             encrypted_text += chr((ord(plaintext[i]) + ord(key[i]) - ord('a')) % 26 + ord('a'))
-#         return encrypted_text
-#
-#
-# def _stream_cipher_decrypt(ciphertext, key, type):
-#
-#     decrypted_text = ""
-#
-#     if type == "binary":
-#         for i in range(len(ciphertext)):
-#             decrypted_text += chr((int(ciphertext[i]) - int(key[i])) % 2 + ord('0'))
-#         return decrypted_text
-#
-#     elif type == "decimal":
-#         for i in range(len(ciphertext)):
-#             decrypted_text += chr((int(ciphertext[i]) - int(key[i])) % 10 + ord('0'))
-#         return decrypted_text
-#
-#     elif type == "alpabet":
-#         for i in range(len(ciphertext)):
-#             decrypted_text += chr((ord(ciphertext[i]) - ord(key[i]) - ord('a')) % 26 + ord('a'))
-#         return decrypted_text
 
 
 if __name__ == '__main__':

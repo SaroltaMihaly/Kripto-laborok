@@ -2,6 +2,7 @@ from ast import literal_eval
 
 import KeyServerHeader
 import socket
+import threading
 import logging
 
 logging.basicConfig(level=logging.DEBUG, format='SERVER : %(message)s')
@@ -19,10 +20,50 @@ class KeyServer(object):
         self.registered_clients[port] = public_key
 
     def get_public_key(self, port: int):
-        return self.registered_clients[port]
+        return self.registered_clients[port] if port in self.registered_clients else None
 
-    def get_registered_clients(self):
-        return self.registered_clients
+    def socket_communication(self, conn: socket.socket):
+        data = conn.recv(KeyServerHeader.MESSAGE_SIZE)
+
+        if not data:
+            logging.info('')
+            return
+        request = data.decode()
+        logging.info(f'Decoded request: {request}')
+
+        while KeyServerHeader.END_CONN not in request:
+            if 'PUBLIC_KEY' in request:
+                try:
+                    port = int(request.split(':')[1])
+                    public_key = self.get_public_key(port)
+                    if public_key:
+                        logging.info(f'Sending public key: {public_key}')
+                        conn.sendall(str(public_key).encode())
+                    else:
+                        logging.info('Error: Invalid request: No such client')
+                        conn.sendall(KeyServerHeader.INVALID.encode())
+                except ValueError:
+                    logging.info('Error: Invalid request')
+                    conn.sendall(KeyServerHeader.INVALID.encode())
+            elif 'REGISTER' in request:
+                try:
+                    port, public_key = literal_eval(request.split(':')[1])
+                    self.register_client((port, public_key))
+                    logging.info(f'Registered client: {port=}, {public_key=}')
+                    conn.sendall(KeyServerHeader.GOOD.encode())
+                except SyntaxError:
+                    logging.info('Error: Invalid request')
+                    conn.sendall(KeyServerHeader.INVALID.encode())
+
+            data = conn.recv(KeyServerHeader.MESSAGE_SIZE)
+            if not data:
+                logging.info('No data received, closing client socketo!')
+                break
+            request = data.decode()
+            logging.info(f'Decoded request: {request}')
+
+        conn.close()
+        logging.info('Closed connection with client')
 
     def start_server(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ser_socket:
@@ -31,37 +72,9 @@ class KeyServer(object):
             logging.info('Server listening...')
 
             while True:
-                conn, addr = ser_socket.accept()
-                logging.info(f'Connected by {addr}')
-                data = conn.recv(KeyServerHeader.MESSAGE_SIZE)
-
-                if not data:
-                    logging.info('')
-                    break
-
-                request = data.decode()
-                logging.info(f'Decoded request: {request}')
-
-                if 'PUBLIC_KEY' in request:
-                    try:
-                        port = int(request.split(':')[1])
-                        public_key = self.get_public_key(port)
-                        logging.info(f'Sending public key: {public_key}')
-                        conn.sendall(str(public_key).encode())
-                    except ValueError:
-                        logging.info('Error: Invalid request')
-                        conn.sendall('Error: Invalid request'.encode())
-                elif 'REGISTER' in request:
-                    try:
-                        port, public_key = literal_eval(request.split(':')[1])
-                        self.register_client((port, public_key))
-                        logging.info(f'Registered client: {port=}, {public_key=}')
-                        conn.sendall(KeyServerHeader.GOOD.encode())
-                    except SyntaxError:
-                        logging.info('Error: Invalid request')
-                        conn.sendall('Error: Invalid request'.encode())
-
-                conn.close()
+                conn, address = ser_socket.accept()
+                logging.info(f'Connected to {address}...')
+                threading.Thread(target=self.socket_communication, args=(conn,)).start()
 
 
 if __name__ == '__main__':
