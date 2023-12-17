@@ -12,7 +12,7 @@ import KeyServerHeader
 import logging
 
 sys.path.append(str(Path(__file__).parent.parent.resolve()))
-from lab1.crypto import generate_private_key, create_public_key, encrypt_mh, decrypt_mh
+from MerkellHellman import generate_private_key, create_public_key, encrypt_mh, decrypt_mh
 from lab2.stream_cipher import StreamCipher
 
 logging.basicConfig(level=logging.INFO, format='CLIENT : %(message)s')
